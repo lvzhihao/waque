@@ -82,6 +82,16 @@ export default class LarkClient {
     return data.data;
   }
 
+  async getGroupsRepos(name: string) {
+    const { data } = await this.client.get(`/groups/${name}/repos`);
+    return data.data;
+  }
+
+  async getGroups() {
+    const { data } = await this.client.get(`/users/${this.user.id}/groups`);
+    return data.data;
+  }
+
   async getUser() {
     const { data } = await this.client.get('/user');
     return data.data;

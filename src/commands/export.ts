@@ -33,7 +33,7 @@ export default class Export extends Base {
     docs.map(async (doc: any) => {
       const docDetail = await lark.getDoc(doc.id);
       const filename = docDetail.title.trim();
-      const file = `${filename}.md`;
+      const file = `${docDetail.slug}.md`;
       let content = [];
       const url = docDetail.slug === filename ? null : docDetail.slug;
       const isPublic = docDetail.public === 1 ? null : docDetail.public;
@@ -53,10 +53,12 @@ export default class Export extends Base {
       signale.success(`Exported ${file}`);
     });
     const repo = await lark.getRepo();
-    if (repo.toc) {
+    if (repo.toc || repo.toc_yml) {
       const toc = await lark.getRepoToc();
       const content = toc.map((doc: any) => {
-        return `${times(doc.depth - 1, '  ')}- [${doc.title}](${doc.slug})`;
+        let slug = (doc.slug === '#') ? '' : doc.slug + '.md';
+        let show = (slug === '') ? doc.title : `[${doc.title}](${slug})`;
+        return `${times(doc.depth - 1, '  ')}- ${show}`;
       }).concat(['\n']).join('\n');
       writeFileSync(join(dir, 'summary.md'), content);
       signale.success('Exported summary.md');

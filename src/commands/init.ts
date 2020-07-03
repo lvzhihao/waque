@@ -23,12 +23,61 @@ export default class Init extends Base {
 
     const lark = new LarkClient(this.config, this.config.currentUser);
 
-    const repos = await lark.getRepos();
+    const questionsMode = [
+      {
+        name: 'mode',
+        message: '选择模式',
+        type: 'autocomplete',
+        source: (_answersSoFar: string, input: string) => {
+          let modeNames = [
+            '1/个人(user)',
+            '2/组织(group)',
+          ];
 
-    const questions = [
+          if (input) {
+            modeNames = modeNames.filter((name: string) => name.includes(input));
+          }
+
+          return Promise.resolve(modeNames);
+        },
+        filter: (input: string) => input.match(/\((.+)\)/)![1],
+        validate: (input: string) => !!input
+      },
+    ];
+    const { mode } = (await prompt(questionsMode)) as any;
+    let repos;
+    if (mode === 'group') {
+      const groups = await lark.getGroups();
+      const questionsGroup = [
+        {
+          name: 'group',
+          message: '选择团队',
+          type: 'autocomplete',
+          source: (_answersSoFar: string, input: string) => {
+            let groupNames = groups
+              .filter((group: any) => !!group.login)
+              .map((group: any) => `${group.id}/${group.name}(${group.login})`);
+
+            if (input) {
+              groupNames = groupNames.filter((name: string) => name.includes(input));
+            }
+
+            return Promise.resolve(groupNames);
+          },
+          filter: (input: string) => input.match(/\((.+)\)/)![1],
+          validate: (input: string) => !!input
+        },
+      ];
+      const {group} = (await prompt(questionsGroup)) as any;
+      repos = await lark.getGroupsRepos(group);
+    } else {
+      repos = await lark.getRepos();
+    }
+
+    const questionsRepo = [
       {
         name: 'repo',
-        message: '选择语雀知识库',
+        message: '选择知识库',
         type: 'autocomplete',
         source: (_answersSoFar: string, input: string) => {
           let repoNames = repos
@@ -51,7 +100,7 @@ export default class Init extends Base {
       }
     ];
 
-    const { repo, pattern } = (await prompt(questions)) as any;
+    const { repo, pattern } = (await prompt(questionsRepo)) as any;
 
     writeFileSync(
       configFile,
