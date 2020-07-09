@@ -3,6 +3,7 @@ import * as signale from 'signale';
 import LarkClient from '../LarkClient';
 import Base from '../base';
 import { resolve, join } from '../path';
+const matchAll = require('match-all');
 
 function times(n: number, s: string) {
   return Array(n)
@@ -62,9 +63,9 @@ export default class Export extends Base {
       content.push(`# ${docDetail.title.trim()}\n`);
       //download file
       let rsts: any[];
-      rsts = [...await docDetail.body.matchAll(/\((https:\/\/cdn\.nlark\.com\/[^)]*)\)/g)];
+      rsts = matchAll(docDetail.body, /\((https:\/\/cdn\.nlark\.com\/[^)]*)\)/g).toArray();
       for (const value of rsts) {
-        let orgUrl = new URL(value[1]);
+        let orgUrl = new URL(value);
         let response = await LarkClient.getCdn(orgUrl.toString());
         if (response.status === 200) {
           let pathname = orgUrl.pathname.split('/');
@@ -72,11 +73,11 @@ export default class Export extends Base {
           response.data.pipe(asset);
           asset.on('finish', function () {
             asset.close();  // close() is async, call cb after close completes.
-            signale.success(`Download ${value[1]}`);
+            signale.success(`Download ${value}`);
           }).on('error', function () {
             asset.close();
           });
-          docDetail.body = docDetail.body.replace(value[1], '../' + assetsValue + '/' + pathname[pathname.length - 1]);
+          docDetail.body = docDetail.body.replace(value, '../' + assetsValue + '/' + pathname[pathname.length - 1]);
         }
       }
       content.push(docDetail.body);
