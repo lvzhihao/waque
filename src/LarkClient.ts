@@ -1,6 +1,6 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, {AxiosInstance} from 'axios';
 import User from './User';
-import { join } from './path';
+import {join} from './path';
 
 require('axios-debug-log')({
   request(debug: any, config: any) {
@@ -21,6 +21,14 @@ export default class LarkClient {
   static async login(user: any) {
     const { data } = await axios.post('/authorize', user);
     return data.data;
+  }
+
+  static async getCdn(cdnUrl: string) {
+    return axios({
+      url: cdnUrl,
+      method: 'GET',
+      responseType: 'stream',
+    });
   }
 
   config: any;

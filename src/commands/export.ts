@@ -1,4 +1,4 @@
-import { writeFileSync } from 'fs';
+import fs, {mkdirSync, writeFileSync} from 'fs';
 import * as signale from 'signale';
 import LarkClient from '../LarkClient';
 import Base from '../base';
@@ -29,7 +29,28 @@ export default class Export extends Base {
     const lark = new LarkClient(this.config, this.config.currentUser);
     const docs = await lark.getDocs();
     const dir = resolve(args.dir);
-
+    const assetsValue = 'assets';
+    const assetsDir = dir + '/' + assetsValue;
+    const docsValue = 'docs';
+    const docsDir = dir + '/' + docsValue;
+    // TODO: 优化生成function
+    /*
+    await fs.stat(dir, function (err, stats) {
+      if (err || !stats.isDirectory()) {
+        mkdirSync(dir);
+      }
+    });
+     */
+    await fs.stat(assetsDir, function (err, stats) {
+      if (err || !stats.isDirectory()) {
+        mkdirSync(assetsDir);
+      }
+    });
+    await fs.stat(docsDir, function (err, stats) {
+      if (err || !stats.isDirectory()) {
+        mkdirSync(docsDir);
+      }
+    });
     docs.map(async (doc: any) => {
       const docDetail = await lark.getDoc(doc.id);
       const filename = docDetail.title.trim();
@@ -48,16 +69,38 @@ export default class Export extends Base {
         content.push('---\n');
       }
       content.push(`# ${docDetail.title.trim()}\n`);
+      //download file
+      let rsts: any[];
+      rsts = [...await docDetail.body.matchAll(/\((https:\/\/cdn\.nlark\.com\/.*)\)/g)];
+      for (const value of rsts) {
+        let orgUrl = new URL(value[1]);
+        let pathname = orgUrl.pathname.split('/');
+        let asset = fs.createWriteStream(assetsDir + '/' + pathname[pathname.length - 1]);
+        let response = await LarkClient.getCdn(orgUrl.toString());
+        if (response.status === 200) {
+          response.data.pipe(asset);
+          asset.on('finish', function () {
+            asset.close();  // close() is async, call cb after close completes.
+            signale.success(`Download ${value[1]}`);
+          });
+          docDetail.body = docDetail.body.replace(value[1], '../' + assetsValue + '/' + pathname[pathname.length - 1]);
+        } else {
+          fs.unlink(asset);
+        }
+      }
       content.push(docDetail.body);
-      writeFileSync(join(dir, file.replace(/[\/ ]/g, '-')), content.join('\n'));
+      writeFileSync(join(docsDir, file.replace(/[\/ ]/g, '-')), content.join('\n'));
       signale.success(`Exported ${file}`);
     });
     const repo = await lark.getRepo();
     if (repo.toc || repo.toc_yml) {
       const toc = await lark.getRepoToc();
       const content = toc.map((doc: any) => {
-        let slug = (doc.slug === '#') ? '' : doc.slug + '.md';
-        let show = (slug === '') ? doc.title : `[${doc.title}](${slug})`;
+        let filename = '';
+        if (doc.slug !== '#') {
+          filename = docsValue + '/' + doc.slug + '.md';
+        }
+        let show = (filename === '') ? doc.title : `[${doc.title}](${filename})`;
         return `${times(doc.depth - 1, '  ')}- ${show}`;
       }).concat(['\n']).join('\n');
       writeFileSync(join(dir, 'summary.md'), content);
