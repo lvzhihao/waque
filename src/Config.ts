@@ -1,7 +1,6 @@
 import { safeLoad } from 'js-yaml';
 import { join } from './path';
-import { readFileSync } from 'fs';
-import slash from 'slash2';
+import fs, { readFileSync } from 'fs';
 
 export interface IConfig {
   pattern: string;
@@ -27,9 +26,14 @@ export function load() {
     template: false,
   };
 
-  let userConfig = safeLoad(readFileSync(join(process.cwd(), 'yuque.yml'), 'utf8')) as UserConfig;
-
-  const config = { ...defaultConfig, ...userConfig };
+  let config: {};
+  let yml = join(process.cwd(), 'yuque.yml');
+  if (fs.existsSync(yml)) {
+    let userConfig = safeLoad(readFileSync(yml, 'utf8')) as UserConfig;
+    config = {...defaultConfig, ...userConfig};
+  } else {
+    config = {...defaultConfig};
+  }
 
   return config;
 }

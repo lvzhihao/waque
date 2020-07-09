@@ -9,11 +9,16 @@ export default abstract class extends Command {
       char: 't',
       env: 'YUQUE_TOKEN',
     }),
+    repo: flags.string({
+      char: 'r',
+      env: 'YUQUE_REPO',
+    }),
   };
 
   flags?: {
     env: 'yuque';
     token: string;
+    repo: string;
     watch?: boolean;
   };
 
@@ -38,6 +43,11 @@ export default abstract class extends Command {
 
   loadConfig() {
     this.config.lark = load();
+    this.config.lark.repo = this.config.lark.repo || this.flags!.repo;
+    if (!this.config.lark.repo) {
+      signale.error('没有指定的知识库');
+      process.exit(1);
+    }
   }
 
   async loadUser() {

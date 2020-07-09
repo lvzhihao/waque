@@ -33,22 +33,15 @@ export default class Export extends Base {
     const assetsDir = dir + '/' + assetsValue;
     const docsValue = 'docs';
     const docsDir = dir + '/' + docsValue;
-    // TODO: 优化生成function
-    await fs.stat(dir, function (err, stats) {
-      if (err || !stats.isDirectory()) {
-        mkdirSync(dir);
-      }
-    });
-    await fs.stat(assetsDir, function (err, stats) {
-      if (err || !stats.isDirectory()) {
-        mkdirSync(assetsDir);
-      }
-    });
-    await fs.stat(docsDir, function (err, stats) {
-      if (err || !stats.isDirectory()) {
-        mkdirSync(docsDir);
-      }
-    });
+    if (!fs.existsSync(dir)) {
+      mkdirSync(dir);
+    }
+    if (!fs.existsSync(assetsDir)) {
+      mkdirSync(assetsDir);
+    }
+    if (!fs.existsSync(docsDir)) {
+      mkdirSync(docsDir);
+    }
     docs.map(async (doc: any) => {
       const docDetail = await lark.getDoc(doc.id);
       const filename = docDetail.title.trim();
@@ -101,8 +94,8 @@ export default class Export extends Base {
         let show = (filename === '') ? doc.title : `[${doc.title}](${filename})`;
         return `${times(doc.depth - 1, '  ')}- ${show}`;
       }).concat(['\n']).join('\n');
-      writeFileSync(join(dir, 'summary.md'), content);
-      signale.success('Exported summary.md');
+      writeFileSync(join(dir, this.config.lark.summary), content);
+      signale.success(`Exported ${this.config.lark.summary}`);
     }
   }
 }
