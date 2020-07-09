@@ -45,7 +45,7 @@ export default class Init extends Base {
       },
     ];
     const { mode } = (await prompt(questionsMode)) as any;
-    let repos;
+    let repos: any;
     if (mode === 'group') {
       const groups = await lark.getGroups();
       const questionsGroup = [

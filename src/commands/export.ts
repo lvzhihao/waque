@@ -34,13 +34,11 @@ export default class Export extends Base {
     const docsValue = 'docs';
     const docsDir = dir + '/' + docsValue;
     // TODO: 优化生成function
-    /*
     await fs.stat(dir, function (err, stats) {
       if (err || !stats.isDirectory()) {
         mkdirSync(dir);
       }
     });
-     */
     await fs.stat(assetsDir, function (err, stats) {
       if (err || !stats.isDirectory()) {
         mkdirSync(assetsDir);
@@ -71,21 +69,21 @@ export default class Export extends Base {
       content.push(`# ${docDetail.title.trim()}\n`);
       //download file
       let rsts: any[];
-      rsts = [...await docDetail.body.matchAll(/\((https:\/\/cdn\.nlark\.com\/.*)\)/g)];
+      rsts = [...await docDetail.body.matchAll(/\((https:\/\/cdn\.nlark\.com\/[^)]*)\)/g)];
       for (const value of rsts) {
         let orgUrl = new URL(value[1]);
-        let pathname = orgUrl.pathname.split('/');
-        let asset = fs.createWriteStream(assetsDir + '/' + pathname[pathname.length - 1]);
         let response = await LarkClient.getCdn(orgUrl.toString());
         if (response.status === 200) {
+          let pathname = orgUrl.pathname.split('/');
+          let asset = fs.createWriteStream(assetsDir + '/' + pathname[pathname.length - 1]);
           response.data.pipe(asset);
           asset.on('finish', function () {
             asset.close();  // close() is async, call cb after close completes.
             signale.success(`Download ${value[1]}`);
+          }).on('error', function () {
+            asset.close();
           });
           docDetail.body = docDetail.body.replace(value[1], '../' + assetsValue + '/' + pathname[pathname.length - 1]);
-        } else {
-          fs.unlink(asset);
         }
       }
       content.push(docDetail.body);

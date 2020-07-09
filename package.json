@@ -1,9 +1,9 @@
 {
-  "name": "waque",
+  "name": "waque-plus",
   "version": "1.12.2",
-  "author": "Wei Zhu <yesmeck@gmail.com>",
+  "author": "Wei Zhu <yesmeck@gmail.com>, Lv <edwin.lzh@gmail.com>",
   "bin": {
-    "waque": "./bin/run"
+    "waque-plus": "./bin/run"
   },
   "bugs": "https://www.yuque.com/waquehq/topics",
   "dependencies": {
@@ -25,12 +25,14 @@
     "form-data": "^2.3.2",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
+    "global": "^4.4.0",
     "inquirer": "^5.2.0",
     "inquirer-autocomplete-prompt": "^0.12.2",
     "js-yaml": "^3.11.0",
     "lodash": "^4.17.10",
     "mkdirp": "^0.5.1",
     "nunjucks": "^3.1.3",
+    "oclif": "^1.16.1",
     "remark": "^9.0.0",
     "semver": "^5.5.0",
     "sha1-file": "^1.0.1",
@@ -61,7 +63,7 @@
     "standard-version": "^4.4.0",
     "ts-node": "^6",
     "tslint": "^5",
-    "typescript": "^2.8"
+    "typescript": "^3.9.6"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -79,7 +81,7 @@
   "main": "lib/index.js",
   "oclif": {
     "commands": "./lib/commands",
-    "bin": "waque",
+    "bin": "waque-bin",
     "plugins": [
       "@oclif/plugin-help"
     ],
@@ -90,7 +92,7 @@
       ]
     }
   },
-  "repository": "https://github.com/yesmeck/waque",
+  "repository": "https://github.com/lvzhihao/waque",
   "scripts": {
     "precommit": "lint-staged",
     "postpack": "rm -f oclif.manifest.json",
