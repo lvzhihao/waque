@@ -1,9 +1,9 @@
 {
-  "name": "waque-plus",
+  "name": "waqueplus",
   "version": "1.12.2",
   "author": "Wei Zhu <yesmeck@gmail.com>, Lv <edwin.lzh@gmail.com>",
   "bin": {
-    "waque-plus": "./bin/run"
+    "waqueplus": "./bin/run"
   },
   "bugs": "https://www.yuque.com/waquehq/topics",
   "dependencies": {
