@@ -17,3 +17,4 @@ yarn global add waqueplus
 ```
 waqueplus export -t [your_token] -r [your_repo] [dest]
 ```
+[your_token]取自个人语雀的配置。在语雀的 账户设置 中新增一个token，开启相关权限，将token放在上述命令中就可以愉快的导出了
